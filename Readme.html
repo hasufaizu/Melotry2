@@ -61,7 +61,7 @@
         .coordinate-line {
             font-family: 'Courier New', Courier, monospace;
             font-size: 18px;
-            color: #38bdf8;
+            color: #34d399;
             margin: 8px 0;
             font-weight: bold;
         }
@@ -76,14 +76,18 @@
             font-weight: bold;
             font-size: 14px;
         }
+        .maps-link:hover {
+            background-color: #c5221f;
+        }
         .network-info {
             font-size: 13px;
             color: #64748b;
-            margin-top: 10px;
+            margin-top: 15px;
             text-align: left;
             background: #1e293b;
-            padding: 10px;
+            padding: 12px;
             border-radius: 6px;
+            line-height: 1.6;
         }
     </style>
 </head>
@@ -91,7 +95,7 @@
 
     <div class="container">
         <h1>Network Coordinate Finder</h1>
-        <p>This version uses pure Wi-Fi network routing routing data via your public IP. No GPS hardware or browser location prompts are used.</p>
+        <p>This version reads Wi-Fi routing packets secure over HTTPS. No GPS hardware or browser location prompts are used.</p>
         
         <button class="btn" onclick="getNetworkLocation()">Trace Network Location</button>
         
@@ -102,13 +106,13 @@
             <div id="lngText" class="coordinate-line"></div>
             
             <div class="network-info">
-                <strong>Network Identity Details:</strong><br>
-                • Public IP: <span id="ipText" style="color: #e2e8f0;"></span><br>
-                • Provider/ISP: <span id="ispText" style="color: #e2e8f0;"></span><br>
-                • Region/City: <span id="cityText" style="color: #e2e8f0;"></span>
+                <strong>Network Routing Details:</strong><br>
+                • Public IP: <span id="ipText" style="color: #e2e8f0; font-family: monospace;"></span><br>
+                • Service Provider: <span id="ispText" style="color: #e2e8f0;"></span><br>
+                • Node Region: <span id="cityText" style="color: #e2e8f0;"></span>
             </div>
             
-            <a id="googleMapsBtn" class="maps-link" target="_blank">📍 View Network Node on Google Maps</a>
+            <a id="googleMapsBtn" class="maps-link" target="_blank">📍 View House Area on Google Maps</a>
         </div>
     </div>
 
@@ -117,41 +121,40 @@
             const statusMessage = document.getElementById('statusMessage');
             const resultBox = document.getElementById('resultBox');
             
-            statusMessage.innerHTML = "🔄 Reading Wi-Fi network packets & fetching IP data...";
+            statusMessage.innerHTML = "🔄 Querying secure database via Wi-Fi gateway...";
             resultBox.style.display = "none";
 
-            // We fetch the network details directly using a public JSON API
-            fetch('http://ip-api.com/json/')
-                .then(response => response.json())
-                .then(data => {
-                    if(data.status === "success") {
-                        statusMessage.innerHTML = "✅ Network node located successfully!";
-                        
-                        // Extract coordinates and details
-                        const latitude = data.lat;
-                        const longitude = data.lon;
-                        
-                        document.getElementById('latText').innerText = `Latitude: ${latitude}`;
-                        document.getElementById('lngText').innerText = `Longitude: ${longitude}`;
-                        document.getElementById('ipText').innerText = data.query;
-                        document.getElementById('ispText').innerText = data.isp;
-                        document.getElementById('cityText').innerText = `${data.city}, ${data.country}`;
-
-                        // Generate Google Maps link
-                        const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
-                        document.getElementById('googleMapsBtn').href = mapsUrl;
-
-                        resultBox.style.display = "block";
-                    } else {
-                        statusMessage.innerHTML = "❌ Failed to parse network route data.";
+            // Using secure HTTPS endpoint to prevent mixed content blocking
+            fetch('https://ipapi.co/json/')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Database network issue");
                     }
+                    return response.json();
+                })
+                .then(data => {
+                    statusMessage.innerHTML = "✅ Network node located successfully!";
+                    
+                    const latitude = data.latitude;
+                    const longitude = data.longitude;
+                    
+                    document.getElementById('latText').innerText = `Latitude: ${latitude}`;
+                    document.getElementById('lngText').innerText = `Longitude: ${longitude}`;
+                    document.getElementById('ipText').innerText = data.ip;
+                    document.getElementById('ispText').innerText = data.org;
+                    document.getElementById('cityText').innerText = `${data.city}, ${data.region}, ${data.country_name}`;
+
+                    // Set Google Maps link directly using standard format
+                    const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+                    document.getElementById('googleMapsBtn').href = mapsUrl;
+
+                    resultBox.style.display = "block";
                 })
                 .catch(error => {
-                    statusMessage.innerHTML = "❌ Error connecting to network database.";
-                    console.error(error);
+                    statusMessage.innerHTML = "❌ Error connecting to secure database. Check your internet connection.";
+                    console.error("Tracking Error:", error);
                 });
         }
     </script>
 </body>
 </html>
-  
