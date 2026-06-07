@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network-Only Coordinate Finder</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: #1e293b;
+            padding: 35px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            border: 1px solid #334155;
+        }
+        h1 {
+            color: #38bdf8;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #94a3b8;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 25px;
+        }
+        .btn {
+            background-color: #10b981;
+            color: #ffffff;
+            border: none;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .btn:hover {
+            background-color: #059669;
+        }
+        .output-box {
+            margin-top: 25px;
+            padding: 15px;
+            background: #0f172a;
+            border-radius: 8px;
+            border: 1px solid #1e293b;
+            display: none;
+        }
+        .coordinate-line {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 18px;
+            color: #38bdf8;
+            margin: 8px 0;
+            font-weight: bold;
+        }
+        .maps-link {
+            display: inline-block;
+            margin-top: 15px;
+            background-color: #ea4335;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .network-info {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 10px;
+            text-align: left;
+            background: #1e293b;
+            padding: 10px;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Network Coordinate Finder</h1>
+        <p>This version uses pure Wi-Fi network routing routing data via your public IP. No GPS hardware or browser location prompts are used.</p>
+        
+        <button class="btn" onclick="getNetworkLocation()">Trace Network Location</button>
+        
+        <div id="statusMessage" style="margin-top: 15px; font-style: italic;"></div>
+
+        <div id="resultBox" class="output-box">
+            <div id="latText" class="coordinate-line"></div>
+            <div id="lngText" class="coordinate-line"></div>
+            
+            <div class="network-info">
+                <strong>Network Identity Details:</strong><br>
+                • Public IP: <span id="ipText" style="color: #e2e8f0;"></span><br>
+                • Provider/ISP: <span id="ispText" style="color: #e2e8f0;"></span><br>
+                • Region/City: <span id="cityText" style="color: #e2e8f0;"></span>
+            </div>
+            
+            <a id="googleMapsBtn" class="maps-link" target="_blank">📍 View Network Node on Google Maps</a>
+        </div>
+    </div>
+
+    <script>
+        function getNetworkLocation() {
+            const statusMessage = document.getElementById('statusMessage');
+            const resultBox = document.getElementById('resultBox');
+            
+            statusMessage.innerHTML = "🔄 Reading Wi-Fi network packets & fetching IP data...";
+            resultBox.style.display = "none";
+
+            // We fetch the network details directly using a public JSON API
+            fetch('http://ip-api.com/json/')
+                .then(response => response.json())
+                .then(data => {
+                    if(data.status === "success") {
+                        statusMessage.innerHTML = "✅ Network node located successfully!";
+                        
+                        // Extract coordinates and details
+                        const latitude = data.lat;
+                        const longitude = data.lon;
+                        
+                        document.getElementById('latText').innerText = `Latitude: ${latitude}`;
+                        document.getElementById('lngText').innerText = `Longitude: ${longitude}`;
+                        document.getElementById('ipText').innerText = data.query;
+                        document.getElementById('ispText').innerText = data.isp;
+                        document.getElementById('cityText').innerText = `${data.city}, ${data.country}`;
+
+                        // Generate Google Maps link
+                        const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+                        document.getElementById('googleMapsBtn').href = mapsUrl;
+
+                        resultBox.style.display = "block";
+                    } else {
+                        statusMessage.innerHTML = "❌ Failed to parse network route data.";
+                    }
+                })
+                .catch(error => {
+                    statusMessage.innerHTML = "❌ Error connecting to network database.";
+                    console.error(error);
+                });
+        }
+    </script>
+</body>
+</html>
+  
