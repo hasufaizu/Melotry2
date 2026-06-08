@@ -1,160 +1,425 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Network-Only Coordinate Finder</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background-color: #0f172a;
-            color: #f8fafc;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-        .container {
-            background: #1e293b;
-            padding: 35px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-            text-align: center;
-            max-width: 450px;
-            width: 90%;
-            border: 1px solid #334155;
-        }
-        h1 {
-            color: #38bdf8;
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-        p {
-            color: #94a3b8;
-            font-size: 14px;
-            line-height: 1.5;
-            margin-bottom: 25px;
-        }
-        .btn {
-            background-color: #10b981;
-            color: #ffffff;
-            border: none;
-            padding: 14px 28px;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .btn:hover {
-            background-color: #059669;
-        }
-        .output-box {
-            margin-top: 25px;
-            padding: 15px;
-            background: #0f172a;
-            border-radius: 8px;
-            border: 1px solid #1e293b;
-            display: none;
-        }
-        .coordinate-line {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 18px;
-            color: #34d399;
-            margin: 8px 0;
-            font-weight: bold;
-        }
-        .maps-link {
-            display: inline-block;
-            margin-top: 15px;
-            background-color: #ea4335;
-            color: white;
-            text-decoration: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        .maps-link:hover {
-            background-color: #c5221f;
-        }
-        .network-info {
-            font-size: 13px;
-            color: #64748b;
-            margin-top: 15px;
-            text-align: left;
-            background: #1e293b;
-            padding: 12px;
-            border-radius: 6px;
-            line-height: 1.6;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>For You, Maryam — Always</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Great+Vibes&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg:        #0a0812;
+      --ink:       #e8e0f0;
+      --ink-muted: #9b8fb0;
+      --rose:      #f4a7bb;
+      --rose-dim:  #c97b97;
+      --violet:    #b48af7;
+      --violet-dim:#7a5cbf;
+      --glow-r:    rgba(244,167,187,.25);
+      --glow-v:    rgba(180,138,247,.2);
+      --glass-bg:  rgba(255,255,255,.04);
+      --glass-bd:  rgba(255,255,255,.09);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      overflow-x: hidden;
+      cursor: default;
+    }
+
+    /* ── CANVAS BACKGROUND ── */
+    #starfield {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── GRADIENT ORBS ── */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: .25;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .orb-a { width: 520px; height: 520px; background: var(--glow-r); top: -120px; right: -140px; animation: drift 14s ease-in-out infinite alternate; }
+    .orb-b { width: 400px; height: 400px; background: var(--glow-v); bottom: 10%; left: -120px; animation: drift 18s ease-in-out infinite alternate-reverse; }
+    .orb-c { width: 300px; height: 300px; background: rgba(244,167,187,.15); top: 50%; left: 50%; transform: translate(-50%,-50%); animation: pulse-orb 6s ease-in-out infinite; }
+
+    @keyframes drift { from { transform: translateY(0) scale(1); } to { transform: translateY(40px) scale(1.08); } }
+    @keyframes pulse-orb { 0%,100% { opacity:.12; transform:translate(-50%,-50%) scale(1); } 50% { opacity:.2; transform:translate(-50%,-50%) scale(1.15); } }
+
+    /* ── MAIN LAYOUT ── */
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 0 1.5rem 7rem;
+    }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 4rem 0;
+    }
+
+    .eyebrow {
+      font-size: .75rem;
+      letter-spacing: .28em;
+      text-transform: uppercase;
+      color: var(--rose-dim);
+      opacity: 0;
+      animation: fadeUp .9s .3s forwards;
+    }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: clamp(3rem, 10vw, 6rem);
+      line-height: 1.05;
+      margin: 1rem 0 .6rem;
+      opacity: 0;
+      animation: fadeUp 1s .6s forwards;
+      background: linear-gradient(135deg, #ffffff 0%, var(--rose) 55%, var(--violet) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-family: 'Great Vibes', cursive;
+      font-size: clamp(1.5rem, 5vw, 2.2rem);
+      color: var(--rose);
+      opacity: 0;
+      animation: fadeUp .9s .9s forwards;
+      margin-bottom: 1.8rem;
+    }
+
+    .hero-desc {
+      font-size: .95rem;
+      color: var(--ink-muted);
+      max-width: 420px;
+      line-height: 1.75;
+      opacity: 0;
+      animation: fadeUp .9s 1.2s forwards;
+    }
+
+    .scroll-hint {
+      margin-top: 3.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .5rem;
+      opacity: 0;
+      animation: fadeUp .9s 1.8s forwards;
+      color: var(--ink-muted);
+      font-size: .72rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    .scroll-line {
+      width: 1px;
+      height: 48px;
+      background: linear-gradient(to bottom, var(--rose-dim), transparent);
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes scrollPulse { 0%,100% { opacity:.4; transform:scaleY(1); } 50% { opacity:1; transform:scaleY(1.2); } }
+
+    /* ── LETTER SECTION ── */
+    #letter-section {
+      padding: 4rem 0 5rem;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity .9s ease, transform .9s ease;
+    }
+    #letter-section.visible { opacity: 1; transform: translateY(0); }
+
+    .section-label {
+      font-size: .7rem;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      color: var(--violet);
+      margin-bottom: 1.2rem;
+    }
+
+    .section-heading {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      line-height: 1.2;
+      margin-bottom: 2rem;
+      color: #fff;
+    }
+
+    /* ── GLASSMORPHIC CARD ── */
+    .glass-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-bd);
+      border-radius: 1.5rem;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 2.5rem 2.8rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glass-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(135deg, rgba(244,167,187,.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .card-quote-mark {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 7rem;
+      line-height: .6;
+      color: var(--rose);
+      opacity: .18;
+      position: absolute;
+      top: 1.5rem;
+      left: 1.8rem;
+      pointer-events: none;
+    }
+
+    .letter-body {
+      font-size: 1rem;
+      line-height: 2;
+      color: #cdc2de;
+      position: relative;
+      z-index: 1;
+    }
+
+    .letter-body p + p { margin-top: 1.2rem; }
+
+    .letter-em {
+      color: var(--rose);
+      font-style: italic;
+    }
+
+    .letter-strong {
+      color: #fff;
+      font-weight: 500;
+    }
+
+    .letter-to {
+      font-size: .78rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--violet);
+      margin-bottom: 1.5rem;
+      display: block;
+    }
+
+    .letter-sig-wrap {
+      margin-top: 2.2rem;
+      border-top: 1px solid var(--glass-bd);
+      padding-top: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: .2rem;
+    }
+
+    .letter-sig-label {
+      font-size: .72rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+    }
+
+    .letter-sig {
+      font-family: 'Great Vibes', cursive;
+      font-size: 2.1rem;
+      color: var(--rose);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 1rem 1.5rem 4rem;
+      color: var(--ink-muted);
+      font-size: .78rem;
+      letter-spacing: .1em;
+      line-height: 1.9;
+    }
+
+    /* ── KEYFRAMES ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width: 500px) {
+      .glass-card { padding: 2rem 1.5rem; }
+    }
+  </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Network Coordinate Finder</h1>
-        <p>This version reads Wi-Fi routing packets secure over HTTPS. No GPS hardware or browser location prompts are used.</p>
-        
-        <button class="btn" onclick="getNetworkLocation()">Trace Network Location</button>
-        
-        <div id="statusMessage" style="margin-top: 15px; font-style: italic;"></div>
+  <canvas id="starfield"></canvas>
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+  <div class="orb orb-c"></div>
 
-        <div id="resultBox" class="output-box">
-            <div id="latText" class="coordinate-line"></div>
-            <div id="lngText" class="coordinate-line"></div>
-            
-            <div class="network-info">
-                <strong>Network Routing Details:</strong><br>
-                • Public IP: <span id="ipText" style="color: #e2e8f0; font-family: monospace;"></span><br>
-                • Service Provider: <span id="ispText" style="color: #e2e8f0;"></span><br>
-                • Node Region: <span id="cityText" style="color: #e2e8f0;"></span>
-            </div>
-            
-            <a id="googleMapsBtn" class="maps-link" target="_blank">📍 View House Area on Google Maps</a>
+  <main>
+
+    <!-- ══ HERO ══ -->
+    <section id="hero">
+      <span class="eyebrow">A message, from the heart</span>
+      <h1 class="hero-title">Maryam,<br>You Matter</h1>
+      <p class="hero-sub">— more than I showed —</p>
+      <p class="hero-desc">
+        I made a mistake. Not because I stopped caring — but because I showed it the wrong way at the wrong time. I need you to know the truth.
+      </p>
+      <div class="scroll-hint">
+        <span>keep reading</span>
+        <div class="scroll-line"></div>
+      </div>
+    </section>
+
+    <!-- ══ LETTER ══ -->
+    <section id="letter-section">
+      <p class="section-label">✦ The Letter</p>
+      <h2 class="section-heading">Everything I Should Have<br>Said Out Loud</h2>
+
+      <div class="glass-card">
+        <span class="card-quote-mark">"</span>
+        <div class="letter-body">
+          <span class="letter-to">To Maryam &nbsp;✦</span>
+
+          <p>
+            When you said goodbye, I felt it. Like something inside me just went quiet. That moment was not small to me — it was heavy, and it stayed heavy.
+          </p>
+
+          <p>
+            I tried to stop you. I meant every single word I said. But at some point, I got scared. I didn't want to keep pushing if it was making things worse. So I went quiet. And I know now — to you, that looked like <span class="letter-em">I gave up.</span>
+          </p>
+
+          <p>
+            <span class="letter-strong">I didn't give up, Maryam.</span> I just didn't know how to stay without feeling like I was being too much. That was my mistake, and I own it fully.
+          </p>
+
+          <p>
+            The next morning, when you told me it was a test — I didn't feel angry. I felt sad. Not because you tested me, but because I <span class="letter-em">failed</span> to show you what you already deserved to see: that I would not let you go easily.
+          </p>
+
+          <p>
+            You are not just someone I talk to every day. You are someone who makes my day feel different — better — just by being in it. I didn't say that enough. I should have.
+          </p>
+
+          <p>
+            You were right to feel disappointed. You wanted proof that you matter to me, and I got quiet at the exact moment I should have been loud. <span class="letter-strong">That won't happen again.</span>
+          </p>
+
+          <p>
+            I'm sorry, Maryam. Not the kind of sorry that just wants things to go back to normal — the kind that actually understands what went wrong. The kind that wants to do better.
+          </p>
+
+          <p>
+            You are worth fighting for. You are worth showing up for. And I'm showing up now — even if it's a little late.
+          </p>
+
+          <div class="letter-sig-wrap">
+            <span class="letter-sig-label">Always yours,</span>
+            <span class="letter-sig">Hasnat</span>
+          </div>
         </div>
-    </div>
+      </div>
+    </section>
 
-    <script>
-        function getNetworkLocation() {
-            const statusMessage = document.getElementById('statusMessage');
-            const resultBox = document.getElementById('resultBox');
-            
-            statusMessage.innerHTML = "🔄 Querying secure database via Wi-Fi gateway...";
-            resultBox.style.display = "none";
+  </main>
 
-            // Using secure HTTPS endpoint to prevent mixed content blocking
-            fetch('https://ipapi.co/json/')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("Database network issue");
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    statusMessage.innerHTML = "✅ Network node located successfully!";
-                    
-                    const latitude = data.latitude;
-                    const longitude = data.longitude;
-                    
-                    document.getElementById('latText').innerText = `Latitude: ${latitude}`;
-                    document.getElementById('lngText').innerText = `Longitude: ${longitude}`;
-                    document.getElementById('ipText').innerText = data.ip;
-                    document.getElementById('ispText').innerText = data.org;
-                    document.getElementById('cityText').innerText = `${data.city}, ${data.region}, ${data.country_name}`;
+  <footer>
+    Made with the things I didn't say loudly enough. &nbsp;✦<br>
+    <span style="color:var(--rose);font-family:'Great Vibes',cursive;font-size:1.3rem;">— Hasnat</span>
+  </footer>
 
-                    // Set Google Maps link directly using standard format
-                    const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
-                    document.getElementById('googleMapsBtn').href = mapsUrl;
+  <script>
+    /* ── STARFIELD ── */
+    (function () {
+      const canvas = document.getElementById('starfield');
+      const ctx = canvas.getContext('2d');
+      let W, H, stars = [];
 
-                    resultBox.style.display = "block";
-                })
-                .catch(error => {
-                    statusMessage.innerHTML = "❌ Error connecting to secure database. Check your internet connection.";
-                    console.error("Tracking Error:", error);
-                });
+      function resize() {
+        W = canvas.width  = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+      }
+
+      function initStars(n) {
+        stars = [];
+        for (let i = 0; i < n; i++) {
+          stars.push({
+            x: Math.random() * W,
+            y: Math.random() * H,
+            r: Math.random() * 1.4 + .3,
+            speed: Math.random() * .25 + .05,
+            alpha: Math.random() * .5 + .2,
+            delta: (Math.random() - .5) * .008,
+            color: Math.random() > .6
+              ? `rgba(244,167,187,${Math.random() * .4 + .1})`
+              : `rgba(180,138,247,${Math.random() * .3 + .1})`
+          });
         }
-    </script>
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, W, H);
+        stars.forEach(s => {
+          s.alpha += s.delta;
+          if (s.alpha <= .1 || s.alpha >= .7) s.delta *= -1;
+          s.y -= s.speed;
+          if (s.y < -2) { s.y = H + 2; s.x = Math.random() * W; }
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fillStyle = s.color;
+          ctx.globalAlpha = s.alpha;
+          ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+        requestAnimationFrame(draw);
+      }
+
+      resize();
+      initStars(160);
+      draw();
+      window.addEventListener('resize', () => { resize(); initStars(160); });
+    })();
+
+    /* ── SCROLL REVEAL ── */
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) e.target.classList.add('visible');
+      });
+    }, { threshold: .15 });
+
+    document.querySelectorAll('#letter-section').forEach(s => io.observe(s));
+  </script>
 </body>
 </html>
